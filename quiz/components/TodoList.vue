@@ -16,7 +16,7 @@
           v-for="todo in filteredTodos"
           :key="todo.id"
           :todo="todo"
-          @toggle-completion="toggleCompletion"
+          @toggle-completion="handleToggleCompletion"
           @delete-todo="deleteTodo"
       />
     </transition-group>
@@ -39,8 +39,9 @@ export default defineComponent({
   components: {
     TodoItem
   },
+
   mixins: [toggleCompletionMixin],
-  setup() {
+  setup: function () {
     const newTodo = ref('');
     const todos = ref<Todo[]>([]);
     const filter = ref('all');
@@ -65,12 +66,6 @@ export default defineComponent({
       todos.value = todos.value.filter(todo => todo.id !== id);
     };
 
-    const toggleCompletion = (value: UnwrapRef<Todo[]>, id: number) => {
-      const todo = todos.value.find(todo => todo.id === id);
-      if (todo) {
-        todo.completed = !todo.completed;
-      }
-    };
 
     const filteredTodos = computed(() => {
       switch (filter.value) {
@@ -82,8 +77,12 @@ export default defineComponent({
           return todos.value;
       }
     });
+    const toggleCompletion = toggleCompletionMixin.methods?.toggleCompletion;
+
     const handleToggleCompletion = (id: number) => {
-      toggleCompletion(todos.value, id);
+      if (toggleCompletion) {
+        toggleCompletion(todos.value, id);
+      }
     };
 
     watch(filter, () => {
@@ -97,7 +96,7 @@ export default defineComponent({
       filter,
       addTodo,
       deleteTodo,
-      toggleCompletion,
+      handleToggleCompletion,
       filteredTodos
     };
   }
